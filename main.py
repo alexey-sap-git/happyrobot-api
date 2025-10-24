@@ -90,7 +90,7 @@ def load_loads_from_file():
 
 # ==================== HELPER FUNCTIONS ====================
 
-def verify_api_key(api_key: str = Header(None, alias="api-key")):
+def verify_api_key(api_key: str = Header(None, alias="ApiKey")):
     """Verify API key from header"""
     if api_key != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API Key")
@@ -115,7 +115,7 @@ async def root():
 @app.get("/api/v1/verify-carrier/{mc_number}", response_model=CarrierVerificationResponse)
 async def verify_carrier(
     mc_number: str,
-    api_key: str = Header(None, alias="api-key")
+    api_key: str = Header(None, alias="ApiKey")
 ):
     """Carrier verification using FMCSA API"""
     verify_api_key(api_key)
@@ -239,7 +239,7 @@ async def search_loads(
     destination: Optional[str] = Query(None, description="Destination city or state (e.g., 'Dallas, TX')"),
     equipment_type: Optional[str] = Query(None, description="Equipment type - must match exactly (e.g., 'Dry Van', 'Flatbed', 'Reefer')"),
     max_results: int = Query(5, ge=1, le=20, description="Maximum number of results to return"),
-    api_key: str = Header(None, alias="api-key")
+    api_key: str = Header(None, alias="ApiKey")
 ):
     """
     Search available loads with STRICT matching.
