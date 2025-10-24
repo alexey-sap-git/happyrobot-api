@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    container_name: happyrobot-api
+    ports:
+      - "8000:8000"
+    environment:
+      - HAPPYROBOT_API_KEY=${HAPPYROBOT_API_KEY}
+      - FMCSA_API_KEY=${FMCSA_API_KEY}
+    volumes:
+      - ./loads.json:/app/loads.json
+    restart: unless-stopped
