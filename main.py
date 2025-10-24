@@ -90,9 +90,9 @@ def load_loads_from_file():
 
 # ==================== HELPER FUNCTIONS ====================
 
-def verify_api_key(x_api_key: str = Header(None)):
+def verify_api_key(api_key: str = Header(None, alias="api-key")):
     """Verify API key from header"""
-    if x_api_key != API_KEY:
+    if api_key != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API Key")
 
 # ==================== ENDPOINTS ====================
@@ -115,10 +115,10 @@ async def root():
 @app.get("/api/v1/verify-carrier/{mc_number}", response_model=CarrierVerificationResponse)
 async def verify_carrier(
     mc_number: str,
-    x_api_key: str = Header(None)
+    api_key: str = Header(None, alias="api-key")
 ):
     """Carrier verification using FMCSA API"""
-    verify_api_key(x_api_key)
+    verify_api_key(api_key)
 
     mc_number = mc_number.strip()
 
@@ -239,18 +239,18 @@ async def search_loads(
     destination: Optional[str] = Query(None, description="Destination city or state (e.g., 'Dallas, TX')"),
     equipment_type: Optional[str] = Query(None, description="Equipment type - must match exactly (e.g., 'Dry Van', 'Flatbed', 'Reefer')"),
     max_results: int = Query(5, ge=1, le=20, description="Maximum number of results to return"),
-    x_api_key: str = Header(None)
+    api_key: str = Header(None, alias="api-key")
 ):
     """
     Search available loads with STRICT matching.
-    
+
     - origin: Must match city/state (case-insensitive, partial match allowed)
     - destination: Must match city/state (case-insensitive, partial match allowed)
     - equipment_type: STRICT exact match required (case-insensitive)
-    
+
     All filters are applied with AND logic (all conditions must be met).
     """
-    verify_api_key(x_api_key)
+    verify_api_key(api_key)
     
     # Load all loads from file
     all_loads = load_loads_from_file()
