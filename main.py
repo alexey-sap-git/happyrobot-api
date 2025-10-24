@@ -90,8 +90,17 @@ def load_loads_from_file():
 
 # ==================== HELPER FUNCTIONS ====================
 
-def verify_api_key(api_key: str = Header(None, alias="ApiKey")):
-    """Verify API key from header"""
+def verify_api_key(authorization: str = Header(None)):
+    """Verify API key from Authorization header with ApiKey scheme"""
+    if not authorization:
+        raise HTTPException(status_code=403, detail="Missing Authorization header")
+
+    # Expected format: "ApiKey <key>"
+    parts = authorization.split(" ", 1)
+    if len(parts) != 2 or parts[0] != "ApiKey":
+        raise HTTPException(status_code=403, detail="Invalid Authorization format. Expected: ApiKey <key>")
+
+    api_key = parts[1]
     if api_key != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API Key")
 
@@ -115,10 +124,10 @@ async def root():
 @app.get("/api/v1/verify-carrier/{mc_number}", response_model=CarrierVerificationResponse)
 async def verify_carrier(
     mc_number: str,
-    api_key: str = Header(None, alias="ApiKey")
+    authorization: str = Header(None)
 ):
     """Carrier verification using FMCSA API"""
-    verify_api_key(api_key)
+    verify_api_key(authorization)
 
     mc_number = mc_number.strip()
 
@@ -239,7 +248,7 @@ async def search_loads(
     destination: Optional[str] = Query(None, description="Destination city or state (e.g., 'Dallas, TX')"),
     equipment_type: Optional[str] = Query(None, description="Equipment type - must match exactly (e.g., 'Dry Van', 'Flatbed', 'Reefer')"),
     max_results: int = Query(5, ge=1, le=20, description="Maximum number of results to return"),
-    api_key: str = Header(None, alias="ApiKey")
+    authorization: str = Header(None)
 ):
     """
     Search available loads with STRICT matching.
@@ -250,7 +259,7 @@ async def search_loads(
 
     All filters are applied with AND logic (all conditions must be met).
     """
-    verify_api_key(api_key)
+    verify_api_key(authorization)
     
     # Load all loads from file
     all_loads = load_loads_from_file()
